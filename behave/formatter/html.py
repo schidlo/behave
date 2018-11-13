@@ -462,7 +462,7 @@ class HTMLFormatter(Formatter):
 
         # Filling in summary details
         result = []
-        statuses = [x.status for x in self.all_features]
+        statuses = [str(x.status).split('.')[1] for x in self.all_features]
         status_counter = Counter(statuses)
         for k in status_counter:
             result.append('%s: %s' % (k, status_counter[k]))
@@ -473,7 +473,7 @@ class HTMLFormatter(Formatter):
         scenarios = []
         if len(scenarios_list) > 0:
             scenarios = [x for subl in scenarios_list for x in subl]
-        statuses = [x.status for x in scenarios]
+        statuses = [str(x.status).split('.')[1] for x in scenarios]
         status_counter = Counter(statuses)
         for k in status_counter:
             result.append('%s: %s' % (k, status_counter[k]))
@@ -484,7 +484,7 @@ class HTMLFormatter(Formatter):
         steps = []
         if step_list:
             steps = [x for subl in step_list for x in subl]
-        statuses = [x.status for x in steps]
+        statuses = [str(x.status).split('.')[1] for x in steps]
         status_counter = Counter(statuses)
         for k in status_counter:
             result.append('%s: %s' % (k, status_counter[k]))
