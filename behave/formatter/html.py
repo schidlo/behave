@@ -31,7 +31,7 @@ from behave.formatter.base import Formatter
 from behave.compat.collections import Counter
 # XXX-JE-OLD: import lxml.etree as ET
 import xml.etree.ElementTree as ET
-import base64
+import six
 # XXX-JE-NOT-USED: import os.path
 
 
@@ -304,58 +304,81 @@ class HTMLFormatter(Formatter):
                 "Collapsible_toggle('scenario_%s')" % self.scenario_id)
         self.scenario_id += 1
 
+        self.first_step = None
+        self.current = None
+        self.actual = None
+
     def scenario_outline(self, outline):
         self.scenario(self, outline)
         self.scenario_el.set('class', 'scenario outline')
 
-    def match(self, match):
-        self.arguments = match.arguments
-        if match.location:
-            self.location = "%s:%s" % (match.location.filename, match.location.line)
-        else:
-            self.location = "<unknown>"
-
     def step(self, step):
-        self.arguments = None
-        self.embed_in_this_step = None
-        self.last_step = step
 
-    def result(self, result):
-        self.last_step = result
-        step = ET.SubElement(self.steps, 'li', {'class': 'step %s' % result.status.name})
-        step_name = ET.SubElement(step, 'div', {'class': 'step_name'})
+        cur = {}
+
+        cur['state'] = 'step'
+
+        if self.first_step == None:
+            self.first_step = cur
+        else:
+            self.current['next_step'] = cur
+
+        step_el = ET.SubElement(self.steps, 'li', {'class': 'step %s' % step.status.name})
+        step_name = ET.SubElement(step_el, 'div', {'class': 'step_name'})
 
         keyword = ET.SubElement(step_name, 'span', {'class': 'keyword'})
-        keyword.text = result.keyword + u' '
+        keyword.text = step.keyword + u' '
 
-        step_text = ET.SubElement(step_name, 'span', {'class': 'step val'})
-        if self.arguments:
+        cur['step_text'] = ET.SubElement(step_name, 'span', {'class': 'step val'})
+
+        cur['step_file'] = ET.SubElement(step_el, 'div', {'class': 'step_file'})
+
+        cur['act_step_embed_span'] = ET.SubElement(step_el, 'span')
+        cur['act_step_embed_span'].set('class', 'embed')
+
+        cur['step_el'] = step_el
+
+        cur['next_step'] = None
+
+        self.current = cur
+
+    def match(self, match):
+        if self.actual == None:
+            self.actual = self.first_step
+        else:
+            self.actual = self.actual['next_step']
+
+        self.actual['state'] = 'match'
+
+        if match.arguments:
             text_start = 0
-            for argument in self.arguments:
-                step_part = ET.SubElement(step_text, 'span')
+            for argument in match.arguments:
+                step_part = ET.SubElement(self.actual['step_text'], 'span')
                 step_part.text = result.name[text_start:argument.start]
                 if isinstance(argument.value, six.integer_types):
                     argument.value = str(argument.value)
-                ET.SubElement(step_text, 'b').text = argument.value
+                ET.SubElement(self.actual['step_text'], 'b').text = argument.value
                 text_start = argument.end
-            step_part = ET.SubElement(step_text, 'span')
+            step_part = ET.SubElement(self.actual['step_text'], 'span')
             step_part.text = result.name[self.arguments[-1].end:]
         else:
-            step_text.text = result.name
+            self.actual['step_text'].text = result.name
 
-        step_file = ET.SubElement(step, 'div', {'class': 'step_file'})
-        ET.SubElement(step_file, 'span').text = self.location
+        if match.location:
+            location = "%s:%s" % (match.location.filename, match.location.line)
+        else:
+            location = "<unknown>"
+        ET.SubElement(self.actual['step_file'], 'span').text = location
 
-        self.last_step_embed_span = ET.SubElement(step, 'span')
-        self.last_step_embed_span.set('class', 'embed')
+    def result(self, result):
 
         if result.text:
-            message = ET.SubElement(step, 'div', {'class': 'message'})
+            message = ET.SubElement(self.actual['step_el'], 'div', {'class': 'message'})
             pre = ET.SubElement(message, 'pre')
             pre.text = result.text
 
         if result.table:
-            table = ET.SubElement(step, 'table')
+            table = ET.SubElement(self.actual['step_el'], 'table')
             tr = ET.SubElement(table, 'tr')
             for heading in result.table.headings:
                 ET.SubElement(tr, 'th').text = heading
@@ -367,12 +390,12 @@ class HTMLFormatter(Formatter):
 
         if result.error_message:
             self.embed_id += 1
-            link = ET.SubElement(step, 'a', {'class': 'message'})
+            link = ET.SubElement(self.actual['step_el'], 'a', {'class': 'message'})
             link.set("onclick",
                     "Collapsible_toggle('embed_%s')" % self.embed_id)
             link.text = u'Error message'
 
-            embed = ET.SubElement(step, 'pre',
+            embed = ET.SubElement(self.actual['step_el'], 'pre',
                                   {'id': "embed_%s" % self.embed_id,
                                    'style': 'display: none'})
             cleaned_error_message = ''.join(
@@ -389,12 +412,6 @@ class HTMLFormatter(Formatter):
             self.scenario_name.set('class', 'undefined')
             self.header.set('class', 'undefined')
 
-        if hasattr(self, 'embed_in_this_step') and self.embed_in_this_step:
-            self._doEmbed(self.last_step_embed_span,
-                          self.embed_mime_type,
-                          self.embed_data,
-                          self.embed_caption)
-            self.embed_in_this_step = None
 
     def _doEmbed(self, span, mime_type, data, caption):
         self.embed_id += 1
@@ -445,15 +462,7 @@ class HTMLFormatter(Formatter):
             embed.tail = u'    '
 
     def embedding(self, mime_type, data, caption=None):
-        if self.last_step.status == 'untested':
-            # Embed called during step execution
-            self.embed_in_this_step = True
-            self.embed_mime_type = mime_type
-            self.embed_data = data
-            self.embed_caption = caption
-        else:
-            # Embed called in after_*
-            self._doEmbed(self.last_step_embed_span, mime_type, data, caption)
+        self._doEmbed(self.actual['act_step_embed_span'], mime_type, data, caption)
 
     def close(self):
         if not hasattr(self, "all_features"):
