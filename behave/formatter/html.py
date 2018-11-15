@@ -323,6 +323,8 @@ class HTMLFormatter(Formatter):
         else:
             self.current['next_step'] = cur
 
+        cur['name'] = step.name
+
         step_el = ET.SubElement(self.steps, 'li', {'class': 'step %s' % step.status.name})
         step_name = ET.SubElement(step_el, 'div', {'class': 'step_name'})
 
@@ -354,15 +356,15 @@ class HTMLFormatter(Formatter):
             text_start = 0
             for argument in match.arguments:
                 step_part = ET.SubElement(self.actual['step_text'], 'span')
-                step_part.text = result.name[text_start:argument.start]
+                step_part.text = self.actual['name'][text_start:argument.start]
                 if isinstance(argument.value, six.integer_types):
                     argument.value = str(argument.value)
                 ET.SubElement(self.actual['step_text'], 'b').text = argument.value
                 text_start = argument.end
             step_part = ET.SubElement(self.actual['step_text'], 'span')
-            step_part.text = result.name[self.arguments[-1].end:]
+            step_part.text = self.actual['name'][self.arguments[-1].end:]
         else:
-            self.actual['step_text'].text = result.name
+            self.actual['step_text'].text = self.actual['name']
 
         if match.location:
             location = "%s:%s" % (match.location.filename, match.location.line)
