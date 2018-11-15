@@ -322,7 +322,7 @@ class HTMLFormatter(Formatter):
 
     def result(self, result):
         self.last_step = result
-        step = ET.SubElement(self.steps, 'li', {'class': 'step %s' % result.status})
+        step = ET.SubElement(self.steps, 'li', {'class': 'step %s' % result.status.name})
         step_name = ET.SubElement(step, 'div', {'class': 'step_name'})
 
         keyword = ET.SubElement(step_name, 'span', {'class': 'keyword'})
@@ -334,7 +334,9 @@ class HTMLFormatter(Formatter):
             for argument in self.arguments:
                 step_part = ET.SubElement(step_text, 'span')
                 step_part.text = result.name[text_start:argument.start]
-                ET.SubElement(step_text, 'b').text = str(argument.value)
+                if isinstance(argument.value, six.integer_types):
+                    argument.value = str(argument.value)
+                ET.SubElement(step_text, 'b').text = argument.value
                 text_start = argument.end
             step_part = ET.SubElement(step_text, 'span')
             step_part.text = result.name[self.arguments[-1].end:]
@@ -403,7 +405,7 @@ class HTMLFormatter(Formatter):
         if 'video/' in mime_type:
             if not caption:
                 caption = u'Video'
-            link.text = unicode(caption)
+            link.text = six.u(caption)
 
             embed = ET.SubElement(span, 'video',
                                   {'id': 'embed_%s' % self.embed_id,
@@ -412,25 +414,25 @@ class HTMLFormatter(Formatter):
                                    'controls': ''})
             embed.tail = u'    '
             ET.SubElement(embed, 'source',{
-                          'src': u'data:%s;base64,%s' % (mime_type, base64.b64encode(data)),
-                          'type': '%s; codecs="vp8 vorbis"' % mime_type})
+                          'src': u'data:%s;base64,%s' % (mime_type, data),
+                          'type': mime_type})
 
         if 'image/' in mime_type:
             if not caption:
                 caption = u'Screenshot'
-            link.text = unicode(caption)
+            link.text = six.u(caption)
 
             embed = ET.SubElement(span, 'img', {
                                   'id': 'embed_%s' % self.embed_id,
                                   'style': 'display: none',
                                   'src': u'data:%s;base64,%s' % (
-                                      mime_type, base64.b64encode(data))})
+                                      mime_type, data)})
             embed.tail = u'    '
 
         if 'text/' in mime_type:
             if not caption:
                 caption = u'Data'
-            link.text = unicode(caption)
+            link.text = six.u(caption)
 
             cleaned_data = ''.join(
                 c for c in data if _valid_XML_char_ordinal(ord(c))
@@ -439,7 +441,7 @@ class HTMLFormatter(Formatter):
             embed = ET.SubElement(span, 'pre',
                                   {'id': "embed_%s" % self.embed_id,
                                    'style': 'display: none'})
-            embed.text = cleaned_data
+            embed.text = six.u(cleaned_data)
             embed.tail = u'    '
 
     def embedding(self, mime_type, data, caption=None):
@@ -462,7 +464,7 @@ class HTMLFormatter(Formatter):
 
         # Filling in summary details
         result = []
-        statuses = [str(x.status).split('.')[1] for x in self.all_features]
+        statuses = [x.status.name for x in self.all_features]
         status_counter = Counter(statuses)
         for k in status_counter:
             result.append('%s: %s' % (k, status_counter[k]))
@@ -473,7 +475,7 @@ class HTMLFormatter(Formatter):
         scenarios = []
         if len(scenarios_list) > 0:
             scenarios = [x for subl in scenarios_list for x in subl]
-        statuses = [str(x.status).split('.')[1] for x in scenarios]
+        statuses = [x.status.name for x in scenarios]
         status_counter = Counter(statuses)
         for k in status_counter:
             result.append('%s: %s' % (k, status_counter[k]))
@@ -484,7 +486,7 @@ class HTMLFormatter(Formatter):
         steps = []
         if step_list:
             steps = [x for subl in step_list for x in subl]
-        statuses = [str(x.status).split('.')[1] for x in steps]
+        statuses = [x.status.name for x in steps]
         status_counter = Counter(statuses)
         for k in status_counter:
             result.append('%s: %s' % (k, status_counter[k]))
