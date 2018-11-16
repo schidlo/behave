@@ -316,29 +316,12 @@ class HTMLFormatter(Formatter):
 
         cur = {}
 
-        cur['state'] = 'step'
-
         if self.first_step == None:
             self.first_step = cur
         else:
             self.current['next_step'] = cur
 
         cur['name'] = step.name
-
-        step_el = ET.SubElement(self.steps, 'li', {'class': 'step %s' % step.status.name})
-        step_name = ET.SubElement(step_el, 'div', {'class': 'step_name'})
-
-        keyword = ET.SubElement(step_name, 'span', {'class': 'keyword'})
-        keyword.text = step.keyword + u' '
-
-        cur['step_text'] = ET.SubElement(step_name, 'span', {'class': 'step val'})
-
-        cur['step_file'] = ET.SubElement(step_el, 'div', {'class': 'step_file'})
-
-        cur['act_step_embed_span'] = ET.SubElement(step_el, 'span')
-        cur['act_step_embed_span'].set('class', 'embed')
-
-        cur['step_el'] = step_el
 
         cur['next_step'] = None
 
@@ -350,27 +333,40 @@ class HTMLFormatter(Formatter):
         else:
             self.actual = self.actual['next_step']
 
-        self.actual['state'] = 'match'
+        step_el = ET.SubElement(self.steps, 'li')
+        step_name = ET.SubElement(step_el, 'div', {'class': 'step_name'})
+
+        keyword = ET.SubElement(step_name, 'span', {'class': 'keyword'})
+        keyword.text = step.keyword + u' '
+
+        step_text = ET.SubElement(step_name, 'span', {'class': 'step val'})
+
+        step_file = ET.SubElement(step_el, 'div', {'class': 'step_file'})
+
+        self.actual['act_step_embed_span'] = ET.SubElement(step_el, 'span')
+        self.actual['act_step_embed_span'].set('class', 'embed')
+
+        self.actual['step_el'] = step_el
 
         if match.arguments:
             text_start = 0
             for argument in match.arguments:
-                step_part = ET.SubElement(self.actual['step_text'], 'span')
+                step_part = ET.SubElement(step_text, 'span')
                 step_part.text = self.actual['name'][text_start:argument.start]
                 if isinstance(argument.value, six.integer_types):
                     argument.value = str(argument.value)
-                ET.SubElement(self.actual['step_text'], 'b').text = argument.value
+                ET.SubElement(step_text, 'b').text = argument.value
                 text_start = argument.end
-            step_part = ET.SubElement(self.actual['step_text'], 'span')
+            step_part = ET.SubElement(step_text, 'span')
             step_part.text = self.actual['name'][match.arguments[-1].end:]
         else:
-            self.actual['step_text'].text = self.actual['name']
+            step_text.text = self.actual['name']
 
         if match.location:
             location = "%s:%s" % (match.location.filename, match.location.line)
         else:
             location = "<unknown>"
-        ET.SubElement(self.actual['step_file'], 'span').text = location
+        ET.SubElement(step_file, 'span').text = location
 
     def result(self, result):
 
