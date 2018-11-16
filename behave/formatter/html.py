@@ -53,7 +53,7 @@ def _valid_XML_char_ordinal(i):
 def ET_tostring(elem, pretty_print=False):
     """Render an HTML element(tree) and optionally pretty-print it."""
 
-    text = ET.tostring(elem, "utf-8")   # XXX, method="html")
+    text = ET.tostring(elem, "unicode")   # XXX, method="html")
     if pretty_print:
         # -- RECIPE: For pretty-printing w/ xml.etree.ElementTree.
         # SEE: http://pymotw.com/2/xml/etree/ElementTree/create.html
@@ -203,7 +203,7 @@ class HTMLFormatter(Formatter):
         self.html = ET.Element('html')
         head = ET.SubElement(self.html, 'head')
         ET.SubElement(head, 'title').text = self.title
-        ET.SubElement(head, 'meta', {'content': 'text/html;charset=utf-8'})
+        ET.SubElement(head, 'meta', {'http-equiv': 'Content-Type', 'content': 'text/html;charset=utf-8'})
         style = ET.SubElement(head, 'style', type=u"text/css")
         style.append(ET.Comment(Page.theme.stylesheet_text))
         script = ET.SubElement(head, 'script', type=u"text/javascript")
@@ -362,7 +362,7 @@ class HTMLFormatter(Formatter):
                 ET.SubElement(self.actual['step_text'], 'b').text = argument.value
                 text_start = argument.end
             step_part = ET.SubElement(self.actual['step_text'], 'span')
-            step_part.text = self.actual['name'][self.arguments[-1].end:]
+            step_part.text = self.actual['name'][match.arguments[-1].end:]
         else:
             self.actual['step_text'].text = self.actual['name']
 
@@ -373,6 +373,8 @@ class HTMLFormatter(Formatter):
         ET.SubElement(self.actual['step_file'], 'span').text = location
 
     def result(self, result):
+
+        self.actual['step_el'].set('class', 'step %s' % result.status.name)
 
         if result.text:
             message = ET.SubElement(self.actual['step_el'], 'div', {'class': 'message'})
