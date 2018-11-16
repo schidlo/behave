@@ -357,7 +357,7 @@ Feature: HTML Formatter
                   </div>
                   <span class="embed"/>
                   <a class="message" onclick="Collapsible_toggle('embed_1')">Error message</a>
-                  <pre id="embed_1" style="display: none; white-space: pre-wrap;">Assertion Failed: XFAIL-STEP</pre>
+                  <pre id="embed_1" style="display: none">Assertion Failed: XFAIL-STEP</pre>
 
                 </li>
               </ol>
@@ -414,7 +414,7 @@ Feature: HTML Formatter
                   </div>
                   <span class="embed"/>
                   <a class="message" onclick="Collapsible_toggle('embed_1')">Error message</a>
-                  <pre id="embed_1" style="display: none; white-space: pre-wrap;">Assertion Failed: XFAIL-STEP</pre>
+                  <pre id="embed_1" style="display: none">Assertion Failed: XFAIL-STEP</pre>
                 </li>
               </ol>
             </div>
@@ -499,7 +499,7 @@ Feature: HTML Formatter
                   </div>
                   <span class="embed"/>
                   <a class="message" onclick="Collapsible_toggle('embed_1')">Error message</a>
-                  <pre id="embed_1" style="display: none; white-space: pre-wrap;">Assertion Failed: XFAIL-STEP</pre>
+                  <pre id="embed_1" style="display: none">Assertion Failed: XFAIL-STEP</pre>
 
                 </li>
               </ol>
@@ -530,7 +530,7 @@ Feature: HTML Formatter
                   </div>
                   <span class="embed"/>
                   <a class="message" onclick="Collapsible_toggle('embed_2')">Error message</a>
-                  <pre id="embed_2" style="display: none; white-space: pre-wrap;">Assertion Failed: XFAIL-STEP</pre>
+                  <pre id="embed_2" style="display: none">Assertion Failed: XFAIL-STEP</pre>
 
                 </li>
               </ol>
@@ -635,14 +635,12 @@ Feature: HTML Formatter
                   <div class="step_name">
                     <span class="keyword">When </span>
                     <span class="step val">
-                      a step with parameter &quot;
+                      <span>a step with parameter &quot;</span>
                       <b>foo</b>
-                    </span>
-                    <span class="step val">
-                      &quot; and parameter &quot;
+                      <span>&quot; and parameter &quot;</span>
                       <b>bar</b>
+                      <span>&quot; passes</span>
                     </span>
-                    <span class="step val">&quot; passes</span>
                   </div>
                   <div class="step_file">
                     <span>features/steps/steps.py:15</span>
@@ -696,7 +694,7 @@ Feature: HTML Formatter
               </div>
               <span class="embed"/>
               <div class="message">
-                <pre style="white-space: pre-wrap;">Tiger, tiger, burning bright
+                <pre>Tiger, tiger, burning bright
                 In the forests of the night,
                 What immortal hand or eye
                 Could frame thy fearful symmetry?</pre>

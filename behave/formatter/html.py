@@ -322,8 +322,8 @@ class HTMLFormatter(Formatter):
             self.current['next_step'] = cur
 
         cur['name'] = step.name
-
         cur['next_step'] = None
+        cur['keyword'] = step.keyword
 
         self.current = cur
 
@@ -337,7 +337,7 @@ class HTMLFormatter(Formatter):
         step_name = ET.SubElement(step_el, 'div', {'class': 'step_name'})
 
         keyword = ET.SubElement(step_name, 'span', {'class': 'keyword'})
-        keyword.text = step.keyword + u' '
+        keyword.text = self.actual['keyword'] + u' '
 
         step_text = ET.SubElement(step_name, 'span', {'class': 'step val'})
 
