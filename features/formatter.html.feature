@@ -574,10 +574,10 @@ Feature: HTML Formatter
                   <div class="step_name">
                     <span class="keyword">When </span>
                     <span class="step val">
-                      a step with parameter &quot;
+                      <span>a step with parameter &quot;</span>
                       <b>foo</b>
+                      <span>&quot; passes</span>
                     </span>
-                    <span class="step val">&quot; passes</span>
                   </div>
                   <div class="step_file">
                     <span>features/steps/steps.py:11</span>
