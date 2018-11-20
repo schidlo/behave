@@ -251,7 +251,6 @@ class HTMLFormatter(Formatter):
         self.embed_data = None
         self.embed_mime_type = None
         self.scenario_id = 0
-        self.step_duration = False
 
     def feature(self, feature):
         if not hasattr(self, "all_features"):
@@ -376,8 +375,7 @@ class HTMLFormatter(Formatter):
 
         self.actual['step_el'].set('class', 'step %s' % result.status.name)
 
-        if self.step_duration:
-            ET.SubElement(self.actual['step_text'], 'span').text = "(%0.3fs)" % result.duration
+        ET.SubElement(self.actual['step_text'], 'span').text = "(%0.3fs)" % result.duration
 
         if result.text:
             message = ET.SubElement(self.actual['step_el'], 'div', {'class': 'message'})
