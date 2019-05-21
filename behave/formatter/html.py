@@ -355,8 +355,10 @@ class HTMLFormatter(Formatter):
                 step_part = ET.SubElement(step_text, 'span')
                 step_part.text = self.actual['name'][text_start:argument.start]
                 if isinstance(argument.value, six.integer_types):
-                    argument.value = str(argument.value)
-                ET.SubElement(step_text, 'b').text = argument.value
+                    value = str(argument.value)
+                else:
+                    value = argument.value
+                ET.SubElement(step_text, 'b').text = value
                 text_start = argument.end
             step_part = ET.SubElement(step_text, 'span')
             step_part.text = self.actual['name'][match.arguments[-1].end:]
