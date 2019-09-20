@@ -37,15 +37,16 @@ from .testing_support_async import AsyncStepTheory
 # -----------------------------------------------------------------------------
 # TEST MARKERS:
 # -----------------------------------------------------------------------------
-python_version = float("%s.%s" % sys.version_info[:2])
+# DEPRECATED: @asyncio.coroutine decorator (since: Python >= 3.8)
+_python_version = float("%s.%s" % sys.version_info[:2])
+requires_py34_to_py37 = pytest.mark.skipif(not (3.4 <= _python_version < 3.8),
+    reason="Supported only for python.versions: 3.4 .. 3.7 (inclusive)")
 
-# xfail = pytest.mark.xfail
-py34_or_newer = pytest.mark.skipif(python_version < 3.4, reason="Needs Python >= 3.4")
 
 # -----------------------------------------------------------------------------
 # TESTSUITE:
 # -----------------------------------------------------------------------------
-@py34_or_newer
+@requires_py34_to_py37
 class TestAsyncStepDecorator34(object):
 
     def test_step_decorator_async_run_until_complete2(self):
