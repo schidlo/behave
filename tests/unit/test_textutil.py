@@ -215,8 +215,8 @@ class TestObjectToTextConversion(object):
             assert False, message
 
         text2 = text(e)
-        expected = u"AssertionError: %s" % message
-        assert text2.endswith(expected)
+        assert e.type == AssertionError
+        assert e.match(message)
 
     @requires_python2
     @pytest.mark.parametrize("message", [
@@ -252,9 +252,9 @@ class TestObjectToTextConversion(object):
             raise exception_class(message)
 
         text2 = text(e)
-        expected = u"%s: %s" % (exception_class.__name__, message)
         assert isinstance(text2, six.text_type)
-        assert text2.endswith(expected)
+        assert e.type == exception_class
+        assert e.match(message)
 
     @requires_python2
     @pytest.mark.parametrize("exception_class, message", [
